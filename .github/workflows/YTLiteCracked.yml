@@ -196,6 +196,14 @@ jobs:
           stub="iPhoneOS16.2.sdk/System/Library/PrivateFrameworks/Preferences.framework"
           sdk="$THEOS/sdks/iPhoneOS18.6.sdk/System/Library"
 
+          # The patched stub contains `platform: (null)`, which modern TAPI
+          # rejects as malformed. Normalize it before installing the copies.
+          sed -i '' 's/platform:[[:space:]]*(null)/platform: ios/' "$stub/Preferences.tbd"
+          if grep -q '(null)' "$stub/Preferences.tbd"; then
+            echo "::error::Preferences.tbd still contains an invalid platform"
+            exit 1
+          fi
+
           # Alderis's legacy lcpshim declares Preferences as a regular
           # framework, so ld only searches System/Library/Frameworks.
           mkdir -p "$sdk/Frameworks" "$sdk/PrivateFrameworks"
@@ -409,7 +417,7 @@ jobs:
           make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
           mv packages/*.deb ${{ github.workspace }}/youslider.deb
 
-      - name: Build Alderis
+      - name: ${{ (inputs.all_tweaks || inputs.alderis) && 'Build Alderis' || 'Skip Alderis (not selected)' }}
         if: ${{ inputs.all_tweaks || inputs.alderis }}
         run: |
           cd Alderis
