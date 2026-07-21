@@ -413,7 +413,16 @@ jobs:
         if: ${{ inputs.all_tweaks || inputs.alderis }}
         run: |
           cd Alderis
-          make clean package DEBUG=0 FINALPACKAGE=1 ARCHS=arm64
+          make clean
+
+          # lcpshim only searches its local staged Frameworks directory.
+          # Populate it after `make clean`, which removes the .theos tree.
+          frameworks="$PWD/.theos/obj/install/Library/Frameworks"
+          mkdir -p "$frameworks"
+          cp -R "$THEOS/sdks/iPhoneOS18.6.sdk/System/Library/Frameworks/Preferences.framework" "$frameworks/"
+          test -f "$frameworks/Preferences.framework/Preferences.tbd"
+
+          make package DEBUG=0 FINALPACKAGE=1 ARCHS=arm64
           mv packages/*.deb ${{ github.workspace }}/alderis.deb
 
       - name: Build YouChooseQuality
