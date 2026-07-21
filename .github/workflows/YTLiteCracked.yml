@@ -80,6 +80,18 @@ jobs:
           git checkout
           mv *.sdk $THEOS/sdks
 
+      - name: Add Preferences private framework stub
+        run: |
+          git clone --quiet --depth=1 -n --filter=tree:0 https://github.com/chrisharper22/sdks.git patched-sdks
+          cd patched-sdks
+          git sparse-checkout set --no-cone iPhoneOS16.2.sdk/System/Library/PrivateFrameworks/Preferences.framework
+          git checkout
+
+          destination="$THEOS/sdks/iPhoneOS18.6.sdk/System/Library/PrivateFrameworks"
+          mkdir -p "$destination"
+          cp -R iPhoneOS16.2.sdk/System/Library/PrivateFrameworks/Preferences.framework "$destination/"
+          test -f "$destination/Preferences.framework/Preferences.tbd"
+
       - name: Install cyan and tbd
         run: |
           pipx install --force https://github.com/asdfzxcvbn/pyzule-rw/archive/main.zip
