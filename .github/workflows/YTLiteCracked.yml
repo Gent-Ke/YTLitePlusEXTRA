@@ -28,7 +28,7 @@ on:
         type: boolean
 
       youpip:
-        description: "Select YouPiP"
+        description: "Select YouPiP (includes YTVideoOverlay dependency)"
         default: false
         type: boolean
 
@@ -255,7 +255,7 @@ jobs:
         run: git clone --quiet --depth=1 https://github.com/PoomSmart/YouGroupSettings.git
            
       - name: Clone YTVideoOverlay
-        if: ${{ inputs.all_tweaks || inputs.ytvideooverlay }}
+        if: ${{ inputs.all_tweaks || inputs.ytvideooverlay || inputs.youpip }}
         run: git clone --quiet --depth=1 https://github.com/PoomSmart/YTVideoOverlay.git
           
       - name: Clone YTABConfig
@@ -367,7 +367,7 @@ jobs:
           mv packages/*.deb ${{ github.workspace }}/ygs.deb
 
       - name: Build YTVideoOverlay
-        if: ${{ inputs.all_tweaks || inputs.ytvideooverlay }}
+        if: ${{ inputs.all_tweaks || inputs.ytvideooverlay || inputs.youpip }}
         continue-on-error: true
         run: |
           cd YTVideoOverlay
