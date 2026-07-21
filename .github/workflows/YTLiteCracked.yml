@@ -520,13 +520,23 @@ jobs:
 
       - name: Inject Tweaks Into IPA
         run: |
-          tweaks="OpenYouTubeSafariExtension.appex"
+          shopt -s nullglob
+          built_tweaks=( *.deb )
 
-          for f in *.deb; do
-            tweaks="$tweaks $f"
-          done
+          if (( ${#built_tweaks[@]} == 0 )); then
+            echo "::error::No successfully built or downloaded tweak packages were found."
+            exit 1
+          fi
 
-          cyan -i youtube.ipa -o YTLitePlusEXTRA_${{ env.YT_VERSION }}_v5.2.1_cracked.ipa -uwef $tweaks -n "${{ inputs.display_name }}" -b ${{ inputs.bundle_id }}
+          tweaks=( OpenYouTubeSafariExtension.appex "${built_tweaks[@]}" )
+
+          echo "Injecting the following components:"
+          printf '  - %s\n' "${tweaks[@]}"
+
+          cyan -i youtube.ipa -o YTLitePlusEXTRA_${{ env.YT_VERSION }}_v5.2.1_cracked.ipa \
+            -uwef "${tweaks[@]}" \
+            -n "${{ inputs.display_name }}" \
+            -b "${{ inputs.bundle_id }}"
 
       - name: Create a Draft Release
         uses: softprops/action-gh-release@v3
